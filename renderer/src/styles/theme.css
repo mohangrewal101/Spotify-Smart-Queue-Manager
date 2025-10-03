@@ -1,0 +1,93 @@
+/* theme.css */
+
+/* Spotify-inspired colors */
+:root {
+  --spotify-black: #121212;
+  --spotify-green: #1DB954;
+  --spotify-white: #FFFFFF;
+  --spotify-grey: #B3B3B3;
+  --spotify-light-grey: #535353;
+}
+
+/* Global resets / base styles */
+body {
+  margin: 0;
+  font-family: "Circular Spotify", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: var(--spotify-black);
+  color: var(--spotify-white);
+}
+
+/* Button styling */
+button {
+  background-color: var(--spotify-green);
+  color: var(--spotify-white);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background-color: #1ed760; /* slightly brighter green for hover */
+}
+
+/* Input styling */
+input[type="text"] {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  width: 100%;
+  max-width: 400px;
+  font-size: 1rem;
+}
+
+/* Scrollable list styling */
+ul.track-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--spotify-light-grey);
+  border-radius: 6px;
+  background-color: var(--spotify-black);
+}
+
+/* Track item styling */
+li.track-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+li.track-item:hover,
+li.track-item.selected {
+  background-color: var(--spotify-light-grey);
+}
+
+li.track-item img {
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+  border-radius: 4px;
+}
+
+li.track-item div.track-info {
+  display: flex;
+  flex-direction: column;
+}
+
+li.track-item div.track-info .track-name {
+  font-weight: bold;
+  color: var(--spotify-white);
+}
+
+li.track-item div.track-info .track-artists {
+  font-size: 0.85rem;
+  color: var(--spotify-grey);
+}
