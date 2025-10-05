@@ -18,12 +18,6 @@ const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
 
-console.log("Spotify env check:", {
-  id: process.env.SPOTIFY_CLIENT_ID,
-  secret: process.env.SPOTIFY_CLIENT_SECRET ? "✅ loaded" : "❌ missing",
-  redirect: process.env.SPOTIFY_REDIRECT_URI
-});
-
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 500,
@@ -82,7 +76,7 @@ function setupAuthServer() {
   });
 }
 
-// -------------------- IPC HANDLERS --------------------
+// IPC HANDLERS
 
 // Start Spotify login process
 ipcMain.handle("spotify-login", async () => {
@@ -194,7 +188,6 @@ ipcMain.handle("spotify-skip-to-next", async () => {
   return true;
 });
 
-// -------------------------------------------------------
 
 app.whenReady().then(() => {
   createWindow();
