@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { Track } from "../../interfaces/SpotifyInterfaces";
 import "../../styles/theme.css";
 import "./SearchBar.css";
+import { SpotifyService } from "../Spotify/SpotifyService";
 
 interface Props {
   onAdd: (track: Track) => void;
@@ -16,10 +17,7 @@ export default function SearchBar({ onAdd }: Props) {
   useEffect(() => {
     if (!query) return setResults([]);
     const timeout = setTimeout(async () => {
-      const response = (await window.electron.invoke(
-        "spotify-search",
-        query
-      )) as Track[];
+      const response = await SpotifyService.searchTracks(query) as Track[];
       setResults(response);
     }, 200);
     return () => clearTimeout(timeout);

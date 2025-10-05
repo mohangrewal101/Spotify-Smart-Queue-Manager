@@ -1,8 +1,14 @@
 // main.js
+
 const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const path = require("path");
 const express = require("express");
 const fetch = require("node-fetch");
+const dotenv = require("dotenv");
+
+// Load .env from the root directory
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+
 
 let mainWindow;
 let accessToken = null;
@@ -10,7 +16,13 @@ let accessToken = null;
 //TODO: Move these to a secure location
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-const redirectUri = "http://127.0.0.1:8888/callback";
+const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
+
+console.log("Spotify env check:", {
+  id: process.env.SPOTIFY_CLIENT_ID,
+  secret: process.env.SPOTIFY_CLIENT_SECRET ? "✅ loaded" : "❌ missing",
+  redirect: process.env.SPOTIFY_REDIRECT_URI
+});
 
 function createWindow() {
   mainWindow = new BrowserWindow({

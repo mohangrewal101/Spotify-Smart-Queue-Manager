@@ -105,7 +105,7 @@
 /* Pending removal */
 .queue-item.pending-remove {
   background-color: #ff00002e; /* soft red background */
-  color: #ff4d4d; /* red text */
+  color: #ff4d4d; 
 }
 
 .queue-item.pending-remove .queue-track-name,
