@@ -1,8 +1,21 @@
 export const SpotifyService = {
-  login: () => window.electron.invoke("spotify-login"),
+login: async () => {
+  return new Promise<void>((resolve) => {
+    const listener = (...args: unknown[]) => {
+      const token = args[0] as string;
+      console.log("Spotify auth token received:", token);
+      resolve();
+      window.electron.removeAllListeners("spotify-auth-success");
+    };
+
+    window.electron.on("spotify-auth-success", listener);
+    window.electron.invoke("spotify-login");
+  });
+},
   getPlayback: () => window.electron.invoke("spotify-get-playback"),
   getQueue: () => window.electron.invoke("spotify-get-queue"),
-  addToQueue: (uri: string) => window.electron.invoke("spotify-add-to-queue", uri),
+  addToQueue: (uri: string) =>
+    window.electron.invoke("spotify-add-to-queue", uri),
   skipToNext: () => window.electron.invoke("spotify-skip-to-next"),
 
   searchTracks: async (query: string) => {
@@ -14,4 +27,16 @@ export const SpotifyService = {
       return [];
     }
   },
+
+  // Create a new private playlist to hold queued songs
+  createHiddenPlaylist: async (userId: string) =>
+    window.electron.invoke("spotify-create-hidden-playlist", userId),
+
+  addTracksToPlaylist: async (playlistId: string, uris: string[]) =>
+    window.electron.invoke("spotify-add-tracks-to-playlist", {playlistId, uris}),
+
+  startPlayback: async (playlistId: string) =>
+    window.electron.invoke("spotify-play-uris", [
+      `spotify:playlist:${playlistId}`,
+    ]),
 };
