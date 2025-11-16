@@ -181,6 +181,20 @@ ipcMain.handle("spotify-get-queue", async () => {
   return await res.json();
 });
 
+// Queue an entire playlist
+ipcMain.handle("spotify-queue-playlist", async (_event, playlistId) => {
+  return fetch(
+    `https://api.spotify.com/v1/me/player/queue?uri=spotify:playlist:${playlistId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+});
+
+
 // Play a list of URIs (SmartQueue)
 ipcMain.handle("spotify-play-uris", async (event, uris = []) => {
   if (!accessToken) return { error: "not_authenticated" };
@@ -232,6 +246,37 @@ ipcMain.handle("spotify-search", async (_event, query) => {
   return data.tracks?.items || [];
 });
 
+ipcMain.handle("spotify-move-track", async (_event, { playlistId, rangeStart, insertBefore }) => {
+  console.log("Moving track in playlist:", playlistId, rangeStart, insertBefore);
+  try {
+    const playlistRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const playlistData = await playlistRes.json();
+    const snapshotId = playlistData.snapshot_id;
+
+    const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        range_start: rangeStart,
+        insert_before: insertBefore,
+        range_length: 1,
+        snapshot_id: snapshotId,
+      }),
+    });
+
+    console.log("Reorder response status:", res.status, await res.text());
+    return res.ok;
+  } catch (err) {
+    console.error("Spotify move-track error:", err);
+    return false;
+  }
+});
+
 // Add song to queue
 ipcMain.handle("spotify-add-to-queue", async (_event, trackUri) => {
   if (!accessToken) return null;
@@ -275,8 +320,14 @@ ipcMain.handle("spotify-skip-to-next", async () => {
   return true;
 });
 
+// Store hidden playlist ID
 ipcMain.handle("spotify-set-hidden-playlist-id", (_event, id) => {
   hiddenPlaylistId = id;
+});
+
+// Get hidden playlist ID
+ipcMain.handle("spotify-get-hidden-playlist-id", () => {
+  return hiddenPlaylistId;
 });
 
 

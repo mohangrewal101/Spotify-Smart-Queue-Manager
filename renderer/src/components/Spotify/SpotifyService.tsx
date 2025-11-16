@@ -28,7 +28,6 @@ login: async () => {
     }
   },
 
-  // Create a new private playlist to hold queued songs
   createHiddenPlaylist: async (userId: string) =>
     window.electron.invoke("spotify-create-hidden-playlist", userId),
 
@@ -39,4 +38,8 @@ login: async () => {
     window.electron.invoke("spotify-play-uris", [
       `spotify:playlist:${playlistId}`,
     ]),
+  queuePlaylist: async (playlistId: string) =>
+    window.electron.invoke("spotify-queue-playlist", playlistId),
+  moveTrack: (playlistId: string, from: number, to: number) =>
+  window.electron.invoke("spotify-move-track", {playlistId, rangeStart: from, insertBefore: to}),
 };

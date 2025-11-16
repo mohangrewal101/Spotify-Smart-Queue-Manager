@@ -9,8 +9,6 @@ import type { Track } from "./interfaces/SpotifyInterfaces";
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false); 
-  //TODO ADD THIS BACK:
-  // eslint-disable-next-line
   const [, setHiddenPlaylistId] = useState<string | null>(null);
   const { queue, fetchQueue, addTrack } = useQueue();
   const { currentlyPlayingId, togglePending, pendingRef } =
@@ -25,8 +23,6 @@ function App() {
     setHiddenPlaylistId(playlistId);
     await window.electron.invoke("spotify-set-hidden-playlist-id", playlistId);
 
-    // // Phase 1: Mirror current playback source
-    //const playback = await SpotifyService.getPlayback();
     const sourceTracks = await window.electron.invoke(
       "spotify-get-current-source-tracks"
     ) as Track[];
@@ -36,10 +32,26 @@ function App() {
     if (trackUris.length > 0) {
       console.log("Track URIs to add to hidden playlist:", trackUris);
       await SpotifyService.addTracksToPlaylist(playlistId, trackUris);
-      await SpotifyService.startPlayback(playlistId);
+      await SpotifyService.queuePlaylist(playlistId);
       await fetchQueue(); 
     }
   };
+
+  const handleReorderTrack = async (oldIndex: number, newIndex: number) => {
+  console.log("Reordering track", oldIndex, "→", newIndex);
+
+  const playlistId = await window.electron.invoke("spotify-get-hidden-playlist-id") as string;
+  if (!playlistId) {
+    console.error("No hidden playlist ID found.");
+    return;
+  }
+  
+  await SpotifyService.moveTrack(playlistId, oldIndex, newIndex);
+
+  // Refresh queue UI
+  await fetchQueue();
+};
+  
 
   return (
     <main style={{ padding: "20px" }}>
@@ -62,6 +74,7 @@ function App() {
               currentlyPlayingId={currentlyPlayingId ?? undefined}
               pendingRemoval={pendingRef.current}
               onTogglePending={togglePending}
+              onReorderTrack={handleReorderTrack}
             />
           </section>
         </>
