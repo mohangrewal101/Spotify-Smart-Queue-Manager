@@ -28,18 +28,6 @@ login: async () => {
     }
   },
 
-  createHiddenPlaylist: async (userId: string) =>
-    window.electron.invoke("spotify-create-hidden-playlist", userId),
-
-  addTracksToPlaylist: async (playlistId: string, uris: string[]) =>
-    window.electron.invoke("spotify-add-tracks-to-playlist", {playlistId, uris}),
-
-  startPlayback: async (playlistId: string) =>
-    window.electron.invoke("spotify-play-uris", [
-      `spotify:playlist:${playlistId}`,
-    ]),
-  queuePlaylist: async (playlistId: string) =>
-    window.electron.invoke("spotify-queue-playlist", playlistId),
   moveTrack: (playlistId: string, from: number, to: number) =>
   window.electron.invoke("spotify-move-track", {playlistId, rangeStart: from, insertBefore: to}),
 };
