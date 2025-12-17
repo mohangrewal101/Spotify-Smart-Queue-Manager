@@ -22,10 +22,6 @@ export const useQueue = () => {
 
       if (!result) return;
 
-      if (result?.currently_playing) {
-        setCurrentTrack(result.currently_playing);
-      }
-
       if (result?.queue) {
         setQueue(result.queue);
         initalizedRef.current = true;
@@ -66,6 +62,8 @@ export const useQueue = () => {
   const popNextTrack = () => {
     setQueue((prev) => prev.slice(1));
   };
+
+  
 
   return {
     currentTrack,

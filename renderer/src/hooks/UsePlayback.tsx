@@ -22,13 +22,20 @@ export const usePlayback = () => {
       return newSet;
     });
   };
+  
 
   const updatePlayback = async () => {
     try {
       const playback = (await SpotifyService.getPlayback()) as Playback;
       setCurrentPlayback(playback);
       const id = playback?.item?.id ?? playback?.item?.uri ?? null;
-      setCurrentlyPlayingId(id);
+      setCurrentlyPlayingId((prevId) => {
+        if (prevId !== id) {
+          console.log("New song playing:", id);
+          return id;
+        }
+        return prevId;
+      });
     } catch (err) {
       console.error("Failed to get playback:", err);
     }

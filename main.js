@@ -12,7 +12,6 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 let mainWindow;
 let accessToken = null;
-let hiddenPlaylistId = null;
 
 //TODO: Move these to a secure location
 const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -94,24 +93,6 @@ ipcMain.handle("spotify-get-user-id", async () => {
   return data.id;
 });
 
-// Create a hidden playlist
-ipcMain.handle("spotify-create-hidden-playlist", async (_event, userId) => {
-  const res = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name: "Smart Queue Session",
-      public: false,
-      description: "Temporary playlist for Smart Queue. Auto-deleted."
-    }),
-  });
-  const data = await res.json();
-  return data.id;
-});
-
 // Get full playback source (currently playing + queue)
 ipcMain.handle("spotify-get-current-source-tracks", async () => {
   if (!accessToken) return [];
@@ -153,7 +134,7 @@ ipcMain.handle("spotify-get-current-source-tracks", async () => {
 });
 
 
-// Add tracks to a playlist
+// Add tracks to a playlist TODO: Could be useful later
 ipcMain.handle("spotify-add-tracks-to-playlist", async (_event, { playlistId, uris }) => {
   const chunkSize = 100;
   for (let i = 0; i < uris.length; i += chunkSize) {
@@ -181,7 +162,7 @@ ipcMain.handle("spotify-get-queue", async () => {
   return await res.json();
 });
 
-// Queue an entire playlist
+// Queue an entire playlist TODO: Could be useful later
 ipcMain.handle("spotify-queue-playlist", async (_event, playlistId) => {
   return fetch(
     `https://api.spotify.com/v1/me/player/queue?uri=spotify:playlist:${playlistId}`,
@@ -246,37 +227,6 @@ ipcMain.handle("spotify-search", async (_event, query) => {
   return data.tracks?.items || [];
 });
 
-ipcMain.handle("spotify-move-track", async (_event, { playlistId, rangeStart, insertBefore }) => {
-  console.log("Moving track in playlist:", playlistId, rangeStart, insertBefore);
-  try {
-    const playlistRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    const playlistData = await playlistRes.json();
-    const snapshotId = playlistData.snapshot_id;
-
-    const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        range_start: rangeStart,
-        insert_before: insertBefore,
-        range_length: 1,
-        snapshot_id: snapshotId,
-      }),
-    });
-
-    console.log("Reorder response status:", res.status, await res.text());
-    return res.ok;
-  } catch (err) {
-    console.error("Spotify move-track error:", err);
-    return false;
-  }
-});
-
 // Add song to queue
 ipcMain.handle("spotify-add-to-queue", async (_event, trackUri) => {
   if (!accessToken) return null;
@@ -320,60 +270,9 @@ ipcMain.handle("spotify-skip-to-next", async () => {
   return true;
 });
 
-// Store hidden playlist ID
-ipcMain.handle("spotify-set-hidden-playlist-id", (_event, id) => {
-  hiddenPlaylistId = id;
-});
-
-// Get hidden playlist ID
-ipcMain.handle("spotify-get-hidden-playlist-id", () => {
-  return hiddenPlaylistId;
-});
-
-
-// Delete a playlist
-ipcMain.handle("spotify-delete-playlist", async (_event, playlistId) => {
-  if (!accessToken || !playlistId) return false;
-
-  const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/followers`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${accessToken}` }
-  });
-
-  return res.ok;
-});
-
-const deleteHiddenPlaylist = async () => {
-  if (!accessToken || !hiddenPlaylistId) return;
-  try {
-    const res = await fetch(
-      `https://api.spotify.com/v1/playlists/${hiddenPlaylistId}/followers`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
-    );
-    console.log("Hidden playlist deleted:", res.ok);
-  } catch (err) {
-    console.error("Failed to delete hidden playlist on exit:", err);
-  }
-};
-
 
 
 app.whenReady().then(() => {
   createWindow();
   setupAuthServer();
-});
-
-
-app.on("window-all-closed", async () => {
-  await deleteHiddenPlaylist();
-  if (process.platform !== "darwin") app.quit();
-});
-
-app.on("before-quit", async (event) => {
-  event.preventDefault(); // wait for async deletion
-  await deleteHiddenPlaylist();
-  app.exit();
 });

@@ -21,7 +21,6 @@ import {
 import { SortableItem } from "./SortableItem";
 
 interface Props {
-  currentTrack: Track | null;
   queue: Track[];
   currentlyPlayingId?: string;
   pendingRemoval: Set<string>;
@@ -30,7 +29,6 @@ interface Props {
 }
 
 export default function Queue({
-  currentTrack,
   queue,
   currentlyPlayingId,
   pendingRemoval,
