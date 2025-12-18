@@ -24,4 +24,6 @@ export interface Track {
 
 export interface Playback {
   item?: Track | null;
+  is_playing: boolean;
+  progress_ms?: number;
 }

@@ -1,22 +1,23 @@
 export const SpotifyService = {
-login: async () => {
-  return new Promise<void>((resolve) => {
-    const listener = (...args: unknown[]) => {
-      const token = args[0] as string;
-      console.log("Spotify auth token received:", token);
-      resolve();
-      window.electron.removeAllListeners("spotify-auth-success");
-    };
+  login: async () => {
+    return new Promise<void>((resolve) => {
+      const listener = (...args: unknown[]) => {
+        const token = args[0] as string;
+        console.log("Spotify auth token received:", token);
+        resolve();
+        window.electron.removeAllListeners("spotify-auth-success");
+      };
 
-    window.electron.on("spotify-auth-success", listener);
-    window.electron.invoke("spotify-login");
-  });
-},
+      window.electron.on("spotify-auth-success", listener);
+      window.electron.invoke("spotify-login");
+    });
+  },
+
   getPlayback: () => window.electron.invoke("spotify-get-playback"),
+
   getQueue: () => window.electron.invoke("spotify-get-queue"),
   addToQueue: (uri: string) =>
     window.electron.invoke("spotify-add-to-queue", uri),
-  skipToNext: () => window.electron.invoke("spotify-skip-to-next"),
 
   searchTracks: async (query: string) => {
     try {
@@ -27,7 +28,15 @@ login: async () => {
       return [];
     }
   },
-
   moveTrack: (playlistId: string, from: number, to: number) =>
-  window.electron.invoke("spotify-move-track", {playlistId, rangeStart: from, insertBefore: to}),
+    window.electron.invoke("spotify-move-track", {
+      playlistId,
+      rangeStart: from,
+      insertBefore: to,
+    }),
+
+  play: () => window.electron.invoke("spotify-resume-playback"),
+  pause: () => window.electron.invoke("spotify-pause"),
+  skipToNext: () => window.electron.invoke("spotify-skip-to-next"),
+  skipToPrevious: () => window.electron.invoke("spotify-skip-to-previous"),
 };

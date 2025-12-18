@@ -17,12 +17,11 @@ export const usePlayback = () => {
       if (newSet.has(trackId)) newSet.delete(trackId);
       else newSet.add(trackId);
 
-      pendingRef.current = newSet; 
+      pendingRef.current = newSet;
 
       return newSet;
     });
   };
-  
 
   const updatePlayback = async () => {
     try {
@@ -40,6 +39,11 @@ export const usePlayback = () => {
       console.error("Failed to get playback:", err);
     }
   };
+
+  const play = () => SpotifyService.play();
+  const pause = () => SpotifyService.pause();
+  const next = () => SpotifyService.skipToNext();
+  const previous = () => SpotifyService.skipToPrevious();
 
   useEffect(() => {
     updatePlayback();
@@ -79,5 +83,9 @@ export const usePlayback = () => {
     currentlyPlayingId,
     pendingRemoval: pending,
     togglePending,
+    play,
+    pause,
+    next,
+    previous,
   };
 };

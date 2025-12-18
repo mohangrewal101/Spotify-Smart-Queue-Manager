@@ -1,0 +1,35 @@
+/* PlaybackControls.css */
+
+.playback-controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  height: 64px;
+  background: var(--spotify-black);
+  border-top: 1px solid #222;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+
+  z-index: 1000;
+}
+
+.playback-controls button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.playback-controls button:hover {
+  color: var(--spotify-green);
+}
+
+.play-pause {
+  font-size: 1.75rem;
+}
