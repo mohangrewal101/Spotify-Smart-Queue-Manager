@@ -13,7 +13,6 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 let mainWindow;
 let accessToken = null;
 
-//TODO: Move these to a secure location
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
@@ -208,6 +207,27 @@ ipcMain.handle("spotify-get-playback", async () => {
   return await res.json();
 });
 
+ipcMain.handle("spotify-play-track", async (_event, trackUri) => {
+  if (!accessToken) return null;
+
+  const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ uris: [trackUri] }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Spotify play track error:", error);
+    throw new Error(error.error?.message || "Failed to play track");
+  }
+
+  return true;
+});
+
 // Search for tracks on Spotify
 ipcMain.handle("spotify-search", async (_event, query) => {
   if (!accessToken) return null;
@@ -252,6 +272,36 @@ ipcMain.handle("spotify-add-to-queue", async (_event, trackUri) => {
   return true;
 });
 
+// Start/resume playback
+ipcMain.handle("spotify-resume-playback", async () => {
+  if (!accessToken) return null;
+  const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Spotify resume error:", error);
+    throw new Error(error.error?.message || "Failed to resume playback");
+  }
+});
+
+// Pause playback
+ipcMain.handle("spotify-pause", async () => {
+  if (!accessToken) return null;
+  const response = await fetch("https://api.spotify.com/v1/me/player/pause", {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Spotify pause error:", error);
+    throw new Error(error.error?.message || "Failed to pause playback");
+  }
+});
+
 // Skip to next song
 ipcMain.handle("spotify-skip-to-next", async () => {
   if (!accessToken) return null;
@@ -270,7 +320,21 @@ ipcMain.handle("spotify-skip-to-next", async () => {
   return true;
 });
 
+// Skip to previous song
+ipcMain.handle("spotify-skip-to-previous", async () => {
+  if (!accessToken) return null;
 
+  const response = await fetch("https://api.spotify.com/v1/me/player/previous", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Spotify previous error:", error);
+    throw new Error(error.error?.message || "Failed to go to previous track");
+  }
+  return true;
+});
 
 app.whenReady().then(() => {
   createWindow();

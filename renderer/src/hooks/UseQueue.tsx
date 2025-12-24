@@ -3,17 +3,15 @@ import type { Track } from "../interfaces/SpotifyInterfaces";
 import { SpotifyService } from "../components/Spotify/SpotifyService";
 
 export const useQueue = () => {
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [queue, setQueue] = useState<Track[]>([]);
+  const [history, setHistory] = useState<Track[]>([]);
 
-  const initalizedRef = useRef(false);
 
   /**
    * Fetch the queue from Spotify and sync local UI state.
    * Spotify returns (currently_playing + next_tracks)
    */
   const fetchQueue = async () => {
-    if (initalizedRef.current) return;
     try {
       const result = (await SpotifyService.getQueue()) as {
         currently_playing?: Track;
@@ -24,7 +22,6 @@ export const useQueue = () => {
 
       if (result?.queue) {
         setQueue(result.queue);
-        initalizedRef.current = true;
       }
     } catch (err) {
       console.error("Failed to fetch queue:", err);
@@ -33,11 +30,6 @@ export const useQueue = () => {
 
   const addTrack = async (track: Track) => {
     setQueue((prev) => [track, ...prev]);
-    try {
-      await SpotifyService.addToQueue(track.uri);
-    } catch (err) {
-      console.error("Failed to add track to Spotify queue:", err);
-    }
   };
 
   const removeTrack = (trackId: string) => {
@@ -56,24 +48,40 @@ export const useQueue = () => {
   // For skipping songs flagged for removal:
   const getNextTrack = () => queue[0];
 
-  // TODO: Instead of just doing this we might want to have
-  // UI for currently playing track in the queue?
   // Remove from queue after playing:
-  const popNextTrack = () => {
-    setQueue((prev) => prev.slice(1));
+  const popNextTrack = (currentTrack: Track) => {
+    setHistory((h) => [...h, currentTrack]);
+    setQueue((q) => {
+      if (!q.length) return q;
+      return q.slice(1);
+    });
   };
 
-  
+  const getPreviousTrack = () =>
+    history.length ? history[history.length - 1] : null;
+
+  const popPreviousTrack = (currentTrack: Track) => {
+    setHistory((prev) => {
+      return prev.slice(0, -1);
+    });
+
+    setQueue((q) => {
+      if (q[0]?.id === currentTrack.id) return q;
+      return [currentTrack, ...q];
+    });
+  };
 
   return {
-    currentTrack,
     queue,
+    history,
     fetchQueue,
     addTrack,
     reorderTrack,
     removeTrack,
     getNextTrack,
     popNextTrack,
+    popPreviousTrack,
+    getPreviousTrack,
     setQueue,
   };
 };

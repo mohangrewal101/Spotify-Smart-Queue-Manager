@@ -19,6 +19,9 @@ export const SpotifyService = {
   addToQueue: (uri: string) =>
     window.electron.invoke("spotify-add-to-queue", uri),
 
+
+  playTrack: (uri: string) =>
+    window.electron.invoke("spotify-play-track", uri),
   searchTracks: async (query: string) => {
     try {
       const res = await window.electron.invoke("spotify-search", query);
@@ -28,12 +31,6 @@ export const SpotifyService = {
       return [];
     }
   },
-  moveTrack: (playlistId: string, from: number, to: number) =>
-    window.electron.invoke("spotify-move-track", {
-      playlistId,
-      rangeStart: from,
-      insertBefore: to,
-    }),
 
   play: () => window.electron.invoke("spotify-resume-playback"),
   pause: () => window.electron.invoke("spotify-pause"),

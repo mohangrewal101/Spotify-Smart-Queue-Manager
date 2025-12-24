@@ -15,6 +15,7 @@ export interface Artist {
 }
 
 export interface Track {
+  duration_ms: number;
   album: Album;
   id: string;
   name: string;

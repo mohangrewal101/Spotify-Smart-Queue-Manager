@@ -11,18 +11,60 @@ import { SpotifyService } from "./components/Spotify/SpotifyService";
 import type { Track } from "./interfaces/SpotifyInterfaces";
 
 function App() {
+  const handleReorderTrack = async (oldIndex: number, newIndex: number) => {
+    reorderTrack(oldIndex, newIndex);
+  };
+
+  const handleTrackEnded = async () => {
+    if (trackSkipped.valueOf()) {
+      setTrackSkipped(false);
+    } else {
+      console.log("TRACK ENDED");
+      if (!currentTrack) return;
+      await enforceNextTrack();
+      popNextTrack(currentTrack);
+    }
+  };
+
+  const handleNext = async () => {
+    setTrackSkipped(true);
+
+    if (!currentTrack) return;
+    await enforceNextTrack(true);
+    popNextTrack(currentTrack);
+  };
+
+  const handlePrevious = async () => {
+    setTrackSkipped(true);
+    const prevTrack = getPreviousTrack();
+
+    if (!prevTrack || !currentTrack) return;
+
+    popPreviousTrack(currentTrack);
+    await enforcePreviousTrack(prevTrack);
+  };
+
+  const [trackSkipped, setTrackSkipped] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const { queue, fetchQueue, addTrack, reorderTrack } = useQueue();
+  const {
+    queue,
+    fetchQueue,
+    addTrack,
+    reorderTrack,
+    popNextTrack,
+    popPreviousTrack,
+    getPreviousTrack,
+  } = useQueue();
   const {
     currentPlayback,
     currentlyPlayingId,
     togglePending,
     play,
     pause,
-    next,
-    previous,
     pendingRemoval,
-  } = usePlayback();
+    enforceNextTrack,
+    enforcePreviousTrack,
+  } = usePlayback(queue, handleTrackEnded);
   const currentTrack = useNowPlaying(
     queue,
     currentlyPlayingId,
@@ -38,14 +80,6 @@ function App() {
     console.log("Source tracks:", sourceTracks);
 
     await fetchQueue();
-  };
-
-  const handleReorderTrack = async (oldIndex: number, newIndex: number) => {
-    console.log("Reordering track", oldIndex, "→", newIndex);
-    reorderTrack(oldIndex, newIndex);
-
-    // TODO: Try to see if Spotify can move tracks during playback!
-    //await SpotifyService.moveTrack(playlistId, oldIndex, newIndex);
   };
 
   return (
@@ -84,8 +118,8 @@ function App() {
           <PlaybackControls
             isPlaying={currentPlayback?.is_playing ?? false}
             onPlayPause={() => (currentPlayback?.is_playing ? pause() : play())}
-            onNext={next}
-            onPrevious={previous}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
           />
         </footer>
       )}

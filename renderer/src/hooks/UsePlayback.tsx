@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import type { Playback } from "../interfaces/SpotifyInterfaces";
 import { SpotifyService } from "../components/Spotify/SpotifyService";
+import type { Track } from "../interfaces/SpotifyInterfaces";
 
-export const usePlayback = () => {
+export const usePlayback = (queue: Track[], onTrackEnded: () => void) => {
   const [currentPlayback, setCurrentPlayback] = useState<Playback | null>(null);
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(
     null
@@ -10,6 +11,8 @@ export const usePlayback = () => {
   const [pending, setPending] = useState<Set<string>>(new Set());
 
   const pendingRef = useRef<Set<string>>(new Set());
+  const previousTrackIdRef = useRef<string | null>(null);
+  const transitionRef = useRef<boolean>(false);
 
   const togglePending = (trackId: string) => {
     setPending((prev) => {
@@ -27,23 +30,60 @@ export const usePlayback = () => {
     try {
       const playback = (await SpotifyService.getPlayback()) as Playback;
       setCurrentPlayback(playback);
+
       const id = playback?.item?.id ?? playback?.item?.uri ?? null;
-      setCurrentlyPlayingId((prevId) => {
-        if (prevId !== id) {
-          console.log("New song playing:", id);
-          return id;
-        }
-        return prevId;
-      });
+      setCurrentlyPlayingId((prevId) => (prevId !== id ? id : prevId));
     } catch (err) {
       console.error("Failed to get playback:", err);
     }
   };
 
-  const play = () => SpotifyService.play();
-  const pause = () => SpotifyService.pause();
-  const next = () => SpotifyService.skipToNext();
-  const previous = () => SpotifyService.skipToPrevious();
+  useEffect(() => {
+    const prev = previousTrackIdRef.current;
+    const curr = currentlyPlayingId;
+
+    if (prev && curr && prev !== curr && !transitionRef.current) {
+      console.log("Track ended:", prev);
+      onTrackEnded();
+    }
+
+    previousTrackIdRef.current = curr;
+  }, [currentlyPlayingId, onTrackEnded]);
+
+  const enforceNextTrack = async (forceNext = false) => {
+    if (!queue.length) return;
+
+    transitionRef.current = true;
+
+    const spotifyQueue = (await SpotifyService.getQueue()) as {
+      queue: Track[];
+    };
+    const spotifyNext = spotifyQueue?.queue?.[0];
+    const localNext = queue[0];
+
+    console.log("Local queue first song: " + localNext.name);
+    console.log("Spotify queue first song: " + spotifyNext.name);
+
+    if (!spotifyNext || spotifyNext.id !== localNext.id || forceNext) {
+      console.log("Enforcing smart queue next:", localNext.name);
+      await SpotifyService.playTrack(localNext.uri);
+    }
+
+    transitionRef.current = false;
+  };
+
+  const enforcePreviousTrack = async (track: Track) => {
+    transitionRef.current = true;
+
+    try {
+      console.log("Enforcing previous track:", track.name);
+      await SpotifyService.playTrack(track.uri);
+    } finally {
+      setTimeout(() => {
+        transitionRef.current = false;
+      }, 400);
+    }
+  };
 
   useEffect(() => {
     updatePlayback();
@@ -51,41 +91,15 @@ export const usePlayback = () => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (!currentlyPlayingId || !pendingRef.current.has(currentlyPlayingId))
-      return;
-
-    let mounted = true;
-    const trySkip = async (attempt = 1) => {
-      try {
-        await SpotifyService.skipToNext();
-        const newSet = new Set(pendingRef.current);
-        newSet.delete(currentlyPlayingId);
-        if (mounted) {
-          pendingRef.current = newSet;
-          setPending(newSet);
-        }
-      } catch {
-        if (attempt < 2) {
-          await new Promise((r) => setTimeout(r, 500));
-          return trySkip(attempt + 1);
-        }
-      }
-    };
-    trySkip();
-    return () => {
-      mounted = false;
-    };
-  }, [currentlyPlayingId]);
-
   return {
     currentPlayback,
     currentlyPlayingId,
     pendingRemoval: pending,
     togglePending,
-    play,
-    pause,
-    next,
-    previous,
+    play: () => SpotifyService.play(),
+    pause: () => SpotifyService.pause(),
+    previous: () => SpotifyService.skipToPrevious(),
+    enforceNextTrack,
+    enforcePreviousTrack
   };
 };

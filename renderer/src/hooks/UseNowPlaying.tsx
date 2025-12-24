@@ -12,16 +12,15 @@ export const useNowPlaying = (
 
   useEffect(() => {
     if (!currentlyPlayingId) {
-        setCurrentTrack(null);
-        return;
-    };
+      setCurrentTrack(null);
+      return;
+    }
 
     const track =
-      queue.find((t) => t.id === currentlyPlayingId) ??
       currentPlaybackTrack ??
+      queue.find((t) => t.id === currentlyPlayingId) ??
       null;
 
-    
     setCurrentTrack(track);
   }, [currentlyPlayingId, queue, currentPlaybackTrack]);
 
