@@ -16,35 +16,31 @@ function App() {
   };
 
   const handleTrackEnded = async () => {
-    if (trackSkipped.valueOf()) {
-      setTrackSkipped(false);
-    } else {
-      console.log("TRACK ENDED");
-      if (!currentTrack) return;
+    if (!currentTrack) return;
+    setTransitionRef(true);
       await enforceNextTrack();
       popNextTrack(currentTrack);
-    }
   };
 
   const handleNext = async () => {
-    setTrackSkipped(true);
 
     if (!currentTrack) return;
+    console.log("We are going next!");
+    setTransitionRef(true);
     await enforceNextTrack(true);
     popNextTrack(currentTrack);
   };
 
   const handlePrevious = async () => {
-    setTrackSkipped(true);
     const prevTrack = getPreviousTrack();
 
     if (!prevTrack || !currentTrack) return;
 
+    setTransitionRef(true);
     popPreviousTrack(currentTrack);
     await enforcePreviousTrack(prevTrack);
   };
 
-  const [trackSkipped, setTrackSkipped] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const {
     queue,
@@ -64,12 +60,14 @@ function App() {
     pendingRemoval,
     enforceNextTrack,
     enforcePreviousTrack,
+    setTransitionRef,
   } = usePlayback(queue, handleTrackEnded);
   const currentTrack = useNowPlaying(
     queue,
     currentlyPlayingId,
     currentPlayback?.item ?? undefined
   );
+  
   const login = async () => {
     await SpotifyService.login();
     setLoggedIn(true);
@@ -83,12 +81,11 @@ function App() {
   };
 
   return (
-    <>
+    <div id="smart-queue-helper">
       <main style={{ padding: "20px" }}>
         <header>
           <h1>Smart Playback Manager</h1>
         </header>
-
         {!loggedIn ? (
           <button onClick={login}>Login with Spotify</button>
         ) : (
@@ -123,7 +120,7 @@ function App() {
           />
         </footer>
       )}
-    </>
+    </div>
   );
 }
 

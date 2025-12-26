@@ -1,6 +1,6 @@
 // main.js
 
-const { app, BrowserWindow, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, shell, screen } = require("electron");
 const path = require("path");
 const express = require("express");
 const fetch = require("node-fetch");
@@ -8,7 +8,6 @@ const dotenv = require("dotenv");
 
 // Load .env from the root directory
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-
 
 let mainWindow;
 let accessToken = null;
@@ -18,9 +17,15 @@ const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
 
 function createWindow() {
+  const { width } = screen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({
     width: 500,
-    height: 700,
+    height: 300,
+    x: width - 510,
+    y: 20,
+    //frame: false,
+    //resizable: false,
+    alwaysOnTop: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: true,
@@ -29,6 +34,26 @@ function createWindow() {
   });
 
   mainWindow.loadURL("http://localhost:5173");
+
+  // Prevents quitting when pressing control M
+  mainWindow.on("close", (e) => {
+    e.preventDefault();
+    mainWindow.hide();
+  });
+
+  mainWindow.show();
+
+  const { globalShortcut } = require("electron");
+  app.whenReady().then(() => {
+    globalShortcut.register("Control+M", () => {
+      if (mainWindow.isVisible()) {
+        mainWindow.hide();
+      } else {
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    });
+  });
 }
 
 function setupAuthServer() {
@@ -132,23 +157,25 @@ ipcMain.handle("spotify-get-current-source-tracks", async () => {
   }
 });
 
-
 // Add tracks to a playlist TODO: Could be useful later
-ipcMain.handle("spotify-add-tracks-to-playlist", async (_event, { playlistId, uris }) => {
-  const chunkSize = 100;
-  for (let i = 0; i < uris.length; i += chunkSize) {
-    const chunk = uris.slice(i, i + chunkSize);
-    await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ uris: chunk }),
-    });
+ipcMain.handle(
+  "spotify-add-tracks-to-playlist",
+  async (_event, { playlistId, uris }) => {
+    const chunkSize = 100;
+    for (let i = 0; i < uris.length; i += chunkSize) {
+      const chunk = uris.slice(i, i + chunkSize);
+      await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ uris: chunk }),
+      });
+    }
+    return true;
   }
-  return true;
-});
+);
 
 // Get the user's current playback queue
 ipcMain.handle("spotify-get-queue", async () => {
@@ -173,7 +200,6 @@ ipcMain.handle("spotify-queue-playlist", async (_event, playlistId) => {
     }
   );
 });
-
 
 // Play a list of URIs (SmartQueue)
 ipcMain.handle("spotify-play-uris", async (event, uris = []) => {
@@ -324,10 +350,13 @@ ipcMain.handle("spotify-skip-to-next", async () => {
 ipcMain.handle("spotify-skip-to-previous", async () => {
   if (!accessToken) return null;
 
-  const response = await fetch("https://api.spotify.com/v1/me/player/previous", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  const response = await fetch(
+    "https://api.spotify.com/v1/me/player/previous",
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
   if (!response.ok) {
     const error = await response.json();
     console.error("Spotify previous error:", error);
@@ -339,4 +368,13 @@ ipcMain.handle("spotify-skip-to-previous", async () => {
 app.whenReady().then(() => {
   createWindow();
   setupAuthServer();
+
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length == 0) createWindow();
+  });
+});
+
+app.on("will-quit", () => {
+  const { globalShortcut } = require("electron");
+  globalShortcut.unregisterAll();
 });

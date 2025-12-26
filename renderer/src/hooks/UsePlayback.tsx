@@ -11,7 +11,6 @@ export const usePlayback = (queue: Track[], onTrackEnded: () => void) => {
   const [pending, setPending] = useState<Set<string>>(new Set());
 
   const pendingRef = useRef<Set<string>>(new Set());
-  const previousTrackIdRef = useRef<string | null>(null);
   const transitionRef = useRef<boolean>(false);
 
   const togglePending = (trackId: string) => {
@@ -38,50 +37,34 @@ export const usePlayback = (queue: Track[], onTrackEnded: () => void) => {
     }
   };
 
-  useEffect(() => {
-    const prev = previousTrackIdRef.current;
-    const curr = currentlyPlayingId;
-
-    if (prev && curr && prev !== curr && !transitionRef.current) {
-      console.log("Track ended:", prev);
-      onTrackEnded();
-    }
-
-    previousTrackIdRef.current = curr;
-  }, [currentlyPlayingId, onTrackEnded]);
-
   const enforceNextTrack = async (forceNext = false) => {
     if (!queue.length) return;
+    try {
+      const spotifyQueue = (await SpotifyService.getQueue()) as {
+        queue: Track[];
+      };
+      const spotifyNext = spotifyQueue?.queue?.[0];
+      const localNext = queue[0];
 
-    transitionRef.current = true;
-
-    const spotifyQueue = (await SpotifyService.getQueue()) as {
-      queue: Track[];
-    };
-    const spotifyNext = spotifyQueue?.queue?.[0];
-    const localNext = queue[0];
-
-    console.log("Local queue first song: " + localNext.name);
-    console.log("Spotify queue first song: " + spotifyNext.name);
-
-    if (!spotifyNext || spotifyNext.id !== localNext.id || forceNext) {
-      console.log("Enforcing smart queue next:", localNext.name);
-      await SpotifyService.playTrack(localNext.uri);
+      if (!spotifyNext || spotifyNext.id !== localNext.id || forceNext) {
+        console.log("Enforcing smart queue next:", localNext.name);
+        await SpotifyService.playTrack(localNext.uri);
+      }
+    } finally {
+      setTimeout(() => {
+        transitionRef.current = false;
+      }, 400);
     }
-
-    transitionRef.current = false;
   };
 
   const enforcePreviousTrack = async (track: Track) => {
-    transitionRef.current = true;
-
     try {
       console.log("Enforcing previous track:", track.name);
       await SpotifyService.playTrack(track.uri);
     } finally {
       setTimeout(() => {
         transitionRef.current = false;
-      }, 400);
+      }, 1000);
     }
   };
 
@@ -90,6 +73,28 @@ export const usePlayback = (queue: Track[], onTrackEnded: () => void) => {
     const interval = setInterval(updatePlayback, 500); // polling every 0.5s
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!currentPlayback?.item || !currentPlayback.is_playing) return;
+
+      const duration = currentPlayback.item.duration_ms;
+      const progress = currentPlayback.progress_ms ?? 0;
+
+      const remaining = duration - progress;
+
+      // Fire slightly before end
+      const NEAR_END_MS = 1000;
+
+      if (remaining <= NEAR_END_MS && !transitionRef.current) {
+        console.log("Track has ended according to progress check");
+        transitionRef.current = true;
+        onTrackEnded();
+      }
+    }, 500); 
+
+    return () => clearInterval(interval);
+  }, [currentPlayback, onTrackEnded]);
 
   return {
     currentPlayback,
@@ -100,6 +105,8 @@ export const usePlayback = (queue: Track[], onTrackEnded: () => void) => {
     pause: () => SpotifyService.pause(),
     previous: () => SpotifyService.skipToPrevious(),
     enforceNextTrack,
-    enforcePreviousTrack
+    enforcePreviousTrack,
+    isTransitioning: () => transitionRef.current,
+    setTransitionRef: (value: boolean) => (transitionRef.current = value),
   };
 };

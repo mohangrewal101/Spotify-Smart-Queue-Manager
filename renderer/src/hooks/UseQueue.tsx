@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import type { Track } from "../interfaces/SpotifyInterfaces";
 import { SpotifyService } from "../components/Spotify/SpotifyService";
 
@@ -36,6 +36,7 @@ export const useQueue = () => {
     setQueue((prev) => prev.filter((t) => t.id !== trackId));
   };
 
+  // TODO: Allow reordering of duplicate tracks separately using instance ID!
   const reorderTrack = (from: number, to: number) => {
     setQueue((prev) => {
       const arr = [...prev];
@@ -52,6 +53,7 @@ export const useQueue = () => {
   const popNextTrack = (currentTrack: Track) => {
     setHistory((h) => [...h, currentTrack]);
     setQueue((q) => {
+      
       if (!q.length) return q;
       return q.slice(1);
     });
@@ -64,7 +66,8 @@ export const useQueue = () => {
     setHistory((prev) => {
       return prev.slice(0, -1);
     });
-
+    
+    // TODO: Allow duplicate track after fixing instance id keys bug.
     setQueue((q) => {
       if (q[0]?.id === currentTrack.id) return q;
       return [currentTrack, ...q];
