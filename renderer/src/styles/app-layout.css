@@ -1,0 +1,66 @@
+/* app-layout.css */
+
+#viewport {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+
+#smart-queue-helper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Main scrollable area */
+#smart-queue-helper main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  min-height: 0; 
+}
+
+#scaled-main-content {
+  transform: scale(0.5);
+  transform-origin: top left;
+  width: 1000px; /* original content width */
+  height: 536px; /* original main height */
+}
+
+/* Footer */
+.playback-footer {
+  height: 48px; 
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--spotify-black);
+  border-top: 1px solid #222;
+  padding: 0 8px; 
+}
+
+/* Left: Now Playing */
+.footer-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Center: Playback controls */
+.footer-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+/* TODO: Right: space (might add volume later) */
+.footer-right {
+  flex: 1;
+}
+

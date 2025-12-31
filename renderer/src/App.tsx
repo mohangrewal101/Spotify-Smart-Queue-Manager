@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./styles/theme.css";
+import "./styles/app-layout.css";
 import SearchBar from "./components/SearchBar/SearchBar";
 import NowPlaying from "./components/Playback/NowPlaying";
 import Queue from "./components/Queue/Queue";
@@ -18,12 +19,11 @@ function App() {
   const handleTrackEnded = async () => {
     if (!currentTrack) return;
     setTransitionRef(true);
-      await enforceNextTrack();
-      popNextTrack(currentTrack);
+    await enforceNextTrack();
+    popNextTrack(currentTrack);
   };
 
   const handleNext = async () => {
-
     if (!currentTrack) return;
     console.log("We are going next!");
     setTransitionRef(true);
@@ -67,7 +67,7 @@ function App() {
     currentlyPlayingId,
     currentPlayback?.item ?? undefined
   );
-  
+
   const login = async () => {
     await SpotifyService.login();
     setLoggedIn(true);
@@ -81,45 +81,56 @@ function App() {
   };
 
   return (
-    <div id="smart-queue-helper">
-      <main style={{ padding: "20px" }}>
-        <header>
-          <h1>Smart Playback Manager</h1>
-        </header>
-        {!loggedIn ? (
-          <button onClick={login}>Login with Spotify</button>
-        ) : (
-          <>
-            <SearchBar onAdd={addTrack} />
-            <section aria-label="Smart Queue" style={{ marginTop: "1rem" }}>
-              <section aria-label="Playback">
+    <div id="viewport">
+      <div id="smart-queue-helper">
+        <main style={{ padding: "20px" }}>
+          <div id="scaled-main-content">
+            {!loggedIn ? (
+              <button onClick={login}>Login with Spotify</button>
+            ) : (
+              <>
+                <SearchBar onAdd={addTrack} />
+                <section aria-label="Smart Queue" style={{ marginTop: "1rem" }}>
+                  {/* <section aria-label="Playback">
                 <h2>Now Playing</h2>
                 <NowPlaying track={currentTrack} />
-              </section>
-              <section aria-label="Queue" style={{ marginTop: "1rem" }}>
-                <h2>Your Queue</h2>
-                <Queue
-                  queue={queue}
-                  currentlyPlayingId={currentlyPlayingId ?? undefined}
-                  pendingRemoval={pendingRemoval}
-                  onTogglePending={togglePending}
-                  onReorderTrack={handleReorderTrack}
-                />
-              </section>
-            </section>
-          </>
+              </section> */}
+                  <section aria-label="Queue" style={{ marginTop: "1rem" }}>
+                    <h2>Your Queue</h2>
+                    <Queue
+                      queue={queue}
+                      currentlyPlayingId={currentlyPlayingId ?? undefined}
+                      pendingRemoval={pendingRemoval}
+                      onTogglePending={togglePending}
+                      onReorderTrack={handleReorderTrack}
+                    />
+                  </section>
+                </section>
+              </>
+            )}
+          </div>
+        </main>
+        {loggedIn && (
+          <footer className="playback-footer">
+            <div className="footer-left">
+              <NowPlaying track={currentTrack} />
+            </div>
+
+            <div className="footer-center">
+              <PlaybackControls
+                isPlaying={currentPlayback?.is_playing ?? false}
+                onPlayPause={() =>
+                  currentPlayback?.is_playing ? pause() : play()
+                }
+                onNext={handleNext}
+                onPrevious={handlePrevious}
+              />
+            </div>
+
+            <div className="footer-right" />
+          </footer>
         )}
-      </main>
-      {loggedIn && (
-        <footer className="playback-footer">
-          <PlaybackControls
-            isPlaying={currentPlayback?.is_playing ?? false}
-            onPlayPause={() => (currentPlayback?.is_playing ? pause() : play())}
-            onNext={handleNext}
-            onPrevious={handlePrevious}
-          />
-        </footer>
-      )}
+      </div>
     </div>
   );
 }

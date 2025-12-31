@@ -4,23 +4,14 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.2rem 1rem;
   position: relative;
   background-color: var(--spotify-black);
+
+  transform: scale(0.4);
+  transform-origin: left center;
 }
 
-
-.now-playing::before {
-  content: "";
-  position: absolute;
-  left: -4px;
-  top: 4px;
-  bottom: 4px;
-  width: 3px;
-  border-radius: 2px;
-  background-color: var(--spotify-green);
-}
 
 .now-playing .now-playing-title {
   font-weight: 600;
