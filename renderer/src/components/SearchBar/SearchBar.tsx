@@ -36,9 +36,6 @@ export default function SearchBar({ onAdd }: Props) {
   return (
     <section className="search-container" aria-label="Spotify Song Search">
       <form className="search-form" onSubmit={(e) => e.preventDefault()}>
-        <label htmlFor="song-search" className="search-label">
-          Search for a song
-        </label>
         <input
           id="song-search"
           className="search-input"

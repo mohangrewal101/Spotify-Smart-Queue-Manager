@@ -11,6 +11,7 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 let mainWindow;
 let accessToken = null;
+let isQuitting = false;
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
@@ -23,8 +24,10 @@ function createWindow() {
     height: 300,
     x: width - 510,
     y: 20,
-    //frame: false,
-    //resizable: false,
+    frame: false,
+    resizable: false,
+    autoHideMenuBar: true,
+    backgroundColor: "#121212",
     alwaysOnTop: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -37,6 +40,7 @@ function createWindow() {
 
   // Prevents quitting when pressing control M
   mainWindow.on("close", (e) => {
+    if (isQuitting) return;
     e.preventDefault();
     mainWindow.hide();
   });
@@ -45,7 +49,7 @@ function createWindow() {
 
   const { globalShortcut } = require("electron");
   app.whenReady().then(() => {
-    globalShortcut.register("Control+M", () => {
+    globalShortcut.register("CommandOrControl+M", () => {
       if (mainWindow.isVisible()) {
         mainWindow.hide();
       } else {
@@ -101,6 +105,13 @@ function setupAuthServer() {
 }
 
 // IPC HANDLERS
+
+// Close the app
+ipcMain.handle("spotify-close-app", () => {
+  isQuitting = true;
+  app.quit();
+});
+
 
 // Start Spotify login process
 ipcMain.handle("spotify-login", async () => {

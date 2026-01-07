@@ -36,4 +36,5 @@ export const SpotifyService = {
   pause: () => window.electron.invoke("spotify-pause"),
   skipToNext: () => window.electron.invoke("spotify-skip-to-next"),
   skipToPrevious: () => window.electron.invoke("spotify-skip-to-previous"),
+  closeApp: () => window.electron.invoke("spotify-close-app"),
 };

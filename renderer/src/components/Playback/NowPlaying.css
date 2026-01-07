@@ -1,15 +1,15 @@
 /* NowPlaying component styles */
 
 .now-playing {
+  height: 32px;
+  max-height: 32px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.2rem 1rem;
   position: relative;
+  overflow: hidden;
   background-color: var(--spotify-black);
-
-  transform: scale(0.4);
-  transform-origin: left center;
 }
 
 
@@ -25,10 +25,22 @@
   color: var(--spotify-grey);
 }
 
+.now-playing-title,
+.now-playing-artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  max-width: 100%;
+  font-size: 0.75rem;
+}
+
+
+
 .now-playing-image {
   position: relative;
-  width: 50px;
-  height: 50px;
+  width: 32px;
+  height: 32px;
   border-radius: 4px;
   flex-shrink: 0;
 }

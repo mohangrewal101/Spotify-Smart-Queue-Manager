@@ -83,6 +83,13 @@ function App() {
   return (
     <div id="viewport">
       <div id="smart-queue-helper">
+        <button
+          className="close-btn"
+          onClick={() => SpotifyService.closeApp()}
+          aria-label="Close app"
+        >
+          ✕
+        </button>
         <main style={{ padding: "20px" }}>
           <div id="scaled-main-content">
             {!loggedIn ? (
@@ -91,10 +98,6 @@ function App() {
               <>
                 <SearchBar onAdd={addTrack} />
                 <section aria-label="Smart Queue" style={{ marginTop: "1rem" }}>
-                  {/* <section aria-label="Playback">
-                <h2>Now Playing</h2>
-                <NowPlaying track={currentTrack} />
-              </section> */}
                   <section aria-label="Queue" style={{ marginTop: "1rem" }}>
                     <h2>Your Queue</h2>
                     <Queue

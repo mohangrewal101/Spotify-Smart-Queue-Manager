@@ -12,6 +12,7 @@ export const usePlayback = (queue: Track[], onTrackEnded: () => void) => {
 
   const pendingRef = useRef<Set<string>>(new Set());
   const transitionRef = useRef<boolean>(false);
+  const lastTrackIdRef = useRef<string | null>(null);
 
   const togglePending = (trackId: string) => {
     setPending((prev) => {
@@ -45,7 +46,7 @@ export const usePlayback = (queue: Track[], onTrackEnded: () => void) => {
       };
       const spotifyNext = spotifyQueue?.queue?.[0];
       const localNext = queue[0];
-
+      
       if (!spotifyNext || spotifyNext.id !== localNext.id || forceNext) {
         console.log("Enforcing smart queue next:", localNext.name);
         await SpotifyService.playTrack(localNext.uri);
@@ -95,6 +96,21 @@ export const usePlayback = (queue: Track[], onTrackEnded: () => void) => {
 
     return () => clearInterval(interval);
   }, [currentPlayback, onTrackEnded]);
+
+  useEffect(() => {
+  const currentId = currentPlayback?.item?.id ?? null;
+  const lastId = lastTrackIdRef.current;
+
+  lastTrackIdRef.current = currentId;
+  if (!currentId || currentId === lastId) return;
+
+  // Check if the new track is pending removal
+  if (pendingRef.current.has(currentId)) {
+    console.log("Auto-skipping pending track:", currentId);
+    onTrackEnded();
+  }
+}, [currentPlayback]);
+
 
   return {
     currentPlayback,
