@@ -1,5 +1,5 @@
 {
-  "name": "Smart Queue Manager",
+  "name": "Spotify Smart Queue Manager",
   "description": "Desktop widget application for managing and interacting with Spotify song queues efficiently.",
   "detailedDescription": "Designed and developed a productivity-focused desktop widget application for Spotify using Electron, React, and Node.js, enabling users to manage and interact with song queues without relying on the Spotify desktop client. Integrated the Spotify Web API to fetch playback and queue data, while engineering custom queue management functionality to overcome API limitations, including manual queue item removal and reordering. Implemented inter-process communication (IPC) to synchronize state between frontend and backend for reliable real-time updates. Built an intuitive, lightweight user interface featuring drag-and-drop queue reordering, custom scrolling, keyboard shortcuts, and search-based song addition. Architected the application as a non-intrusive helper widget that can be accessed via global shortcuts, minimizing workflow disruption and improving productivity. This project demonstrates desktop application development, API integration, system design, and user-focused UI/UX engineering.",
   "startDate": "September 2025",
