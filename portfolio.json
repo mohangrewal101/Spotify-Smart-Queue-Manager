@@ -1,0 +1,32 @@
+{
+  "name": "Smart Queue Manager",
+  "description": "Desktop widget application for managing and interacting with Spotify song queues efficiently.",
+  "detailedDescription": "Designed and developed a productivity-focused desktop widget application for Spotify using Electron, React, and Node.js, enabling users to manage and interact with song queues without relying on the Spotify desktop client. Integrated the Spotify Web API to fetch playback and queue data, while engineering custom queue management functionality to overcome API limitations, including manual queue item removal and reordering. Implemented inter-process communication (IPC) to synchronize state between frontend and backend for reliable real-time updates. Built an intuitive, lightweight user interface featuring drag-and-drop queue reordering, custom scrolling, keyboard shortcuts, and search-based song addition. Architected the application as a non-intrusive helper widget that can be accessed via global shortcuts, minimizing workflow disruption and improving productivity. This project demonstrates desktop application development, API integration, system design, and user-focused UI/UX engineering.",
+  "startDate": "September 2025",
+  "endDate": "January 2026",
+  "type": "personal",
+  "technologies": [
+    "Electron", 
+    "React",
+    "TypeScript", 
+    "JavaScript",
+    "Node.js",
+    "HTML5", 
+    "Tailwind CSS", 
+    "GitHub", 
+    "IPC",
+    "Spotify API",
+    "REST APIs", 
+    "UI Design" 
+  ],
+  "features": [
+    "Spotify queue interaction using Spotify Web API and custom queue management to overcome API limitations",
+    "Global keyboard shortcuts and widget-style UI allowing search and queue management without disrupting workflow",
+    "Real-time queue state synchronization"
+  ],
+  "github": "https://github.com/mohangrewal101/Spotify-Smart-Queue-Manager",
+  "demo": "",
+  "imageFolder": "/Smart_Queue_Manager",
+  "developmentDetails": "Developed using Electron with Node.js backend logic and a React frontend rendered via HTML and CSS. Integrated Spotify Web API endpoints for playback and queue data, and implemented custom logic to enable queue removal and reordering not natively supported by the API. Used IPC for communication between renderer and main processes. Designed the application as a lightweight widget with global shortcuts, drag-and-drop interactions, and optimized scrolling for minimal performance overhead.",
+  "oneLiner": "A lightweight desktop widget that enables full Spotify queue control without disrupting workflow."
+}
