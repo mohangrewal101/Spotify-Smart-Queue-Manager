@@ -28,5 +28,5 @@
   "demo": "",
   "imageFolder": "/Smart_Queue_Manager",
   "developmentDetails": "Developed using Electron with Node.js backend logic and a React frontend rendered via HTML and CSS. Integrated Spotify Web API endpoints for playback and queue data, and implemented custom logic to enable queue removal and reordering not natively supported by the API. Used IPC for communication between renderer and main processes. Designed the application as a lightweight widget with global shortcuts, drag-and-drop interactions, and optimized scrolling for minimal performance overhead.",
-  "oneLiner": "A smarter Spotify queue—add, manage, and move songs without ever opening Spotify. 🎵"
+  "oneLiner": "A smarter Spotify queue manager that adds, manages, and moves songs without ever opening Spotify. 🎵"
 }
