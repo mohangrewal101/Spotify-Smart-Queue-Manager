@@ -109,7 +109,7 @@ npm start
 
 ### Long-Term
 
--👤 User preferences and customization
+- 👤 User preferences and customization
 - 🎼 Playlist-level management (including recommending songs and adding songs to playlists)
 - 🧩 Plugin-style extensions for additional music platforms (Apple music etc)
 
